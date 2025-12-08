@@ -1,0 +1,55 @@
+version: "3"
+services:
+  postgres-primary:
+    image: postgres
+    volumes: # <volume_or_directory_on_host>:<path_in_container>
+      - postgres-volume-primary:/var/lib/postgresql/ # database persistency
+      - ./init-scripts/primary:/docker-entrypoint-initdb.d # autorunning initialization scripts
+    networks:
+      - postgres_network # container communication
+    environment:
+      POSTGRES_USER: primary # superuser name
+      POSTGRES_PASSWORD: primary_password # superuser password
+      POSTGRES_DB: primary_db
+
+    command: |
+      postgres 
+      -c wal_level=replica 
+      -c hot_standby=on 
+      -c max_wal_senders=10 
+      -c max_replication_slots=10 
+      -c hot_standby_feedback=on
+    healthcheck: # check if database is up
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      start_period: 4s
+      start_interval: 1s
+      interval: 1s
+      retries: 5 
+      timeout: 5s
+
+
+  postgres-replica1:
+    image: postgres
+    depends_on:
+      postgres-primary:
+        condition:
+          service_healthy # wait for postgres-primary healtcheck
+        restart: true
+    volumes:
+      - postgres-volume-replica1:/var/lib/postgresql/
+      - ./init-scripts/replica:/opt/replica-scripts # script for replication db initialization
+    networks:
+      - postgres_network
+    environment:
+      PGUSER: replicator1 # connection user
+      PGPASSWORD: replicator1_password # connection password
+      POSTGRES_USER: replicator # superuser name
+      POSTGRES_PASSWORD: replicator_password # superuser password
+    command: ["bash", "opt/replica-scripts/replica-entrypoint.sh"]
+
+volumes:
+  postgres-volume-primary:
+  postgres-volume-replica1:
+
+networks:
+  postgres_network:
