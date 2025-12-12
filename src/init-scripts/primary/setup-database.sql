@@ -1,15 +1,4 @@
 -- =====================================================================
--- 1. BAZA DANYCH (opcjonalnie – możesz pominąć, jeśli już ją masz)
--- =====================================================================
--- UWAGA: wymaga uprawnień superusera, inaczej utwórz bazę ręcznie.
-CREATE DATABASE water_meter_db
-    WITH ENCODING 'UTF8'
-    TEMPLATE template0;
-
--- Po utworzeniu bazy przełącz się na nią:
--- \c water_meter_db;
-
--- =====================================================================
 -- 2. TYPOWE ENUMY / TYPOWANIE LOGICZNE
 -- =====================================================================
 
