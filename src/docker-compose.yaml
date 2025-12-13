@@ -1,4 +1,3 @@
-version: "3"
 services:
   postgres-primary:
     image: postgres
@@ -41,15 +40,37 @@ services:
     networks:
       - postgres_network
     environment:
-      PGUSER: replicator1 # connection user
-      PGPASSWORD: replicator1_password # connection password
-      POSTGRES_USER: replicator # superuser name
-      POSTGRES_PASSWORD: replicator_password # superuser password
+      PGUSER: replicator # connection user
+      PGPASSWORD: replicator_password # connection password
+      POSTGRES_USER: rep1 # superuser name
+      POSTGRES_PASSWORD: rep1_pw # superuser password
+    command: ["bash", "opt/replica-scripts/replica-entrypoint.sh"]
+
+
+  postgres-replica2:
+    image: postgres
+    depends_on:
+      postgres-primary:
+        condition:
+          service_healthy # wait for postgres-primary healtcheck
+        restart: true
+    volumes:
+      - postgres-volume-replica2:/var/lib/postgresql/
+      - ./init-scripts/replica:/opt/replica-scripts # script for replication db initialization
+    networks:
+      - postgres_network
+    environment:
+      PGUSER: replicator # connection user
+      PGPASSWORD: replicator_password # connection password
+      POSTGRES_USER: rep2 # superuser name
+      POSTGRES_PASSWORD: rep2_pw # superuser password
     command: ["bash", "opt/replica-scripts/replica-entrypoint.sh"]
 
 volumes:
   postgres-volume-primary:
   postgres-volume-replica1:
+  postgres-volume-replica2:
 
 networks:
   postgres_network:
+

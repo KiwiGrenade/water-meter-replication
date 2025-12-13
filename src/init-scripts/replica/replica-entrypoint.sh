@@ -18,7 +18,7 @@ if [ ! -s "${PGDATA}/PG_VERSION" ]; then
     -R \
     --host=postgres-primary \
     --checkpoint=fast \
-    --slot=replicator_slot \
+    --slot=${POSTGRES_USER}\
     -C
 
   # Ustaw właściciela
