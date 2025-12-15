@@ -1,5 +1,5 @@
-# RSBD-Projekt
-## Autorzy: Justyna Ziemichód, Jakub Jaśków (G2)
+# RSBD - Projekt
+### Autorzy: Jakub Jaśków, Justyna Ziemichód (G2)
 
 ## Instrukcja:
 
@@ -34,7 +34,6 @@ projektowych
 - [x] **Zajęcia 6 - 10.11.2025:** 
 Przesłanie sprawdzonej, finalnej wersji opisu założeń do projektu (według
 podanego wzoru) na maila prowadzącego; prezentacja wymagań funkcjonalnych i
-
 niefunkcjonalnych rozproszonej aplikacji bazodanowej – diagram przypadków użycia,
 wybrane scenariusze użycia
 
@@ -46,16 +45,16 @@ Docker, Kubernetes);
 - [x] **Zajęcia 10 - 9.12.2025:**
 Projekt i implementacja rozproszonej bazy danych
 
-- [] **Zajęcia 12 - 13.01.2026:**
+- [ ] **Zajęcia 12 - 13.01.2026:**
 Projekt i implementacja prostej aplikacji wykorzystującej rozproszoną bazę
 danych; projekt oraz implementacja mechanizmów loadbalancingu (np. HAProxy, Nginx),
 zapewniających wysoką dostępność systemu oraz równoważenie obciążenia serwerów
 bazodanowych i/lub serwerów aplikacji
 
-- [] **Zajęcia 14 - 27.01.2026:**
+- [ ] **Zajęcia 14 - 27.01.2026:**
 Testy i ocena działania systemu rozproszonego; prezentacja działania
 aplikacji, spisu treści i/lub wstępnej wersji sprawozdania z projektu
 
-- [] **Zajęcia 15 - 3.02.2026:**
+- [ ] **Zajęcia 15 - 3.02.2026:**
 Testy i ocena działania systemu rozproszonego; prezentacja
 działania aplikacji, spisu treści i/lub wstępnej wersji sprawozdania z projektu;
