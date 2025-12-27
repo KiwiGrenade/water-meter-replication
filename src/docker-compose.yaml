@@ -54,48 +54,43 @@ services:
       timeout: 5s
 
 
-  # postgres-replica2:
-  #   image: postgres
-  #   depends_on:
-  #     postgres-primary:
-  #       condition:
-  #         service_healthy # wait for postgres-primary healtcheck
-  #       restart: true
-  #   volumes:
-  #     - postgres-volume-replica2:/var/lib/postgresql/
-  #     - ./init-scripts/replica:/opt/replica-scripts/ # script for replication db initialization
-  #   networks:
-  #     - postgres_network
-  #   environment:
-  #     PGUSER: replicator # connection user
-  #     PGPASSWORD: replicator_password # connection password
-  #     POSTGRES_USER: rep2 # superuser name
-  #     POSTGRES_PASSWORD: rep2_pw # superuser password
-  #   command: ["bash", "opt/replica-scripts/replica-entrypoint.sh"]
-    # healthcheck: # check if database is up
-    #   test: ["CMD-SHELL", "pg_isready -U primary -d primary_db"]
-    #   start_period: 4s
-    #   start_interval: 1s
-    #   interval: 1s
-    #   retries: 5 
-    #   timeout: 5s
-
-  pgpool:
-    user: "0:0" # uruchom jako root
-    image: pgpool/pgpool
+  postgres-replica2:
+    image: postgres
     depends_on:
-      postgres-replica1:
+      postgres-primary:
         condition:
           service_healthy
         restart: true
-      # postgres-replica2:
-      #   condition:
-      #     service_healthy
-      #   restart: true
-    volumes: # <volume_or_directory_on_host>:<path_in_container>
-      - ./init-scripts/pgpool:/config:ro # pgpool setup scripts
+    volumes:
+      - postgres-volume-replica2:/var/lib/postgresql/
+      - ./init-scripts/replica:/opt/replica-scripts/
     networks:
-      - postgres_network # container communication
+      - postgres_network
+    environment:
+      PGUSER: replicator
+      PGPASSWORD: replicator_password
+      POSTGRES_USER: rep2
+      POSTGRES_PASSWORD: rep2_pw
+    command: ["bash", "opt/replica-scripts/replica-entrypoint.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U primary -d primary_db"]
+      start_period: 4s
+      start_interval: 1s
+      interval: 1s
+      retries: 5 
+      timeout: 5s
+
+  pgpool:
+    image: pgpool/pgpool
+    depends_on:
+      postgres-primary:
+        condition:
+          service_healthy
+        restart: true
+    volumes:
+      - ./init-scripts/pgpool:/config:ro
+    networks:
+      - postgres_network
     ports:
       - 5432:9999 # map localhost 5432(postgres) to 9999 (pgpool) on pgpool container
 
@@ -103,7 +98,6 @@ volumes:
   postgres-volume-primary:
   postgres-volume-replica1:
   postgres-volume-replica2:
-  pgpool-volume:
 
 networks:
   postgres_network:
