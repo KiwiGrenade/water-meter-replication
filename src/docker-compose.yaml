@@ -86,6 +86,14 @@ services:
         condition:
           service_healthy
         restart: true
+      postgres-replica1:
+        condition:
+          service_healthy
+        restart: true
+      postgres-replica2:
+        condition:
+          service_healthy
+        restart: true
     volumes:
       - ./init-scripts/pgpool:/config:ro
     networks:
