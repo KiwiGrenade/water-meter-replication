@@ -17,6 +17,10 @@ docker compose down
 ```
 docker compose down -v
 ```
+4. Połączenie z postgresem
+```
+psql -h localhost -U primary
+```
 
 ## Terminarz:
 - [x] **Zajęcia 1 - 7.10.2025:**

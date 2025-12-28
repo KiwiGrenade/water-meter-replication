@@ -9,7 +9,6 @@ services:
     environment:
       POSTGRES_USER: primary # superuser name
       POSTGRES_PASSWORD: pw # superuser password
-      POSTGRES_DB: primary_db
 
     command: |
       postgres 
@@ -19,7 +18,7 @@ services:
       -c max_replication_slots=10 
       -c hot_standby_feedback=on
     healthcheck: # check if database is up
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
       start_period: 4s
       start_interval: 1s
       interval: 1s
@@ -46,7 +45,7 @@ services:
       POSTGRES_PASSWORD: rep1_pw # superuser password
     command: ["bash", "opt/replica-scripts/replica-entrypoint.sh"]
     healthcheck: # check if database is up
-      test: ["CMD-SHELL", "pg_isready -U primary -d primary_db"]
+      test: ["CMD-SHELL", "pg_isready -U primary"]
       start_period: 4s
       start_interval: 1s
       interval: 1s
@@ -73,7 +72,7 @@ services:
       POSTGRES_PASSWORD: rep2_pw
     command: ["bash", "opt/replica-scripts/replica-entrypoint.sh"]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U primary -d primary_db"]
+      test: ["CMD-SHELL", "pg_isready -U primary"]
       start_period: 4s
       start_interval: 1s
       interval: 1s
