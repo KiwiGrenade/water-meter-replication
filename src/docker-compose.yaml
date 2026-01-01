@@ -11,13 +11,6 @@ services:
       POSTGRES_USER: primary # superuser name
       POSTGRES_PASSWORD: pw # superuser password
 
-    command: |
-      postgres 
-      -c wal_level=replica 
-      -c hot_standby=on 
-      -c max_wal_senders=10 
-      -c max_replication_slots=10 
-      -c hot_standby_feedback=on
     healthcheck: # check if database is up
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
       start_period: 4s
@@ -28,7 +21,9 @@ services:
 
 
   postgres-replica1:
-    image: postgres
+    build:
+      context: .
+      dockerfile: docker/replica/Dockerfile
     container_name: postgres-replica1
     depends_on:
       postgres-primary:
@@ -38,6 +33,7 @@ services:
     volumes:
       - postgres-volume-replica1:/var/lib/postgresql/
       - ./init-scripts/replica:/opt/replica-scripts/ # script for replication db initialization
+      - ./ssh/authorized_keys:/root/.ssh/authorized_keys
     networks:
       - postgres_network
     environment:
@@ -45,7 +41,6 @@ services:
       PGPASSWORD: replicator_password # connection password
       POSTGRES_USER: rep1 # superuser name
       POSTGRES_PASSWORD: rep1_pw # superuser password
-    command: ["bash", "/opt/replica-scripts/replica-entrypoint.sh"]
     healthcheck: # check if database is up
       test: ["CMD-SHELL", "pg_isready -U primary"]
       start_period: 4s
@@ -57,7 +52,9 @@ services:
 
   postgres-replica2:
     container_name: postgres-replica2
-    image: postgres
+    build:
+      context: .
+      dockerfile: docker/replica/Dockerfile
     depends_on:
       postgres-primary:
         condition:
@@ -66,6 +63,7 @@ services:
     volumes:
       - postgres-volume-replica2:/var/lib/postgresql/
       - ./init-scripts/replica:/opt/replica-scripts/
+      - ./ssh/authorized_keys:/root/.ssh/authorized_keys
     networks:
       - postgres_network
     environment:
@@ -73,7 +71,6 @@ services:
       PGPASSWORD: replicator_password
       POSTGRES_USER: rep2
       POSTGRES_PASSWORD: rep2_pw
-    command: ["bash", "/opt/replica-scripts/replica-entrypoint.sh"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U primary"]
       start_period: 4s
@@ -84,7 +81,9 @@ services:
 
   pgpool:
     container_name: pgpool
-    image: pgpool/pgpool
+    build:
+      context: .
+      dockerfile: docker/pgpool-ssh/Dockerfile
     depends_on:
       postgres-primary:
         condition:
@@ -100,6 +99,7 @@ services:
         restart: true
     volumes:
       - ./init-scripts/pgpool:/config:ro
+      - ./ssh/id_ed25519_pgpool:/root/.ssh/id_ed25519_pgpool
     networks:
       - postgres_network
     ports:
@@ -112,3 +112,4 @@ volumes:
 
 networks:
   postgres_network:
+

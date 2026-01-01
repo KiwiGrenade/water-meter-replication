@@ -33,8 +33,8 @@ OLD_PRIMARY_NODE_PORT="${12}"
 
 PGHOME=/usr/pgsql-15
 REPL_SLOT_NAME=${FAILED_NODE_HOST//[-.]/_}
-POSTGRESQL_STARTUP_USER=postgres
-SSH_KEY_FILE=id_rsa_pgpool
+POSTGRESQL_STARTUP_USER=root
+SSH_KEY_FILE=id_ed25519_pgpool
 SSH_OPTIONS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/${SSH_KEY_FILE}"
 
 
