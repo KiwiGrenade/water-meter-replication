@@ -75,6 +75,35 @@ services:
       retries: 5 
       timeout: 5s
 
+
+  postgres-replica3:
+    container_name: postgres-replica3
+    build:
+      context: .
+      dockerfile: docker/replica/Dockerfile
+    depends_on:
+      postgres-primary:
+        condition:
+          service_healthy
+        restart: true
+    volumes:
+      - postgres-volume-replica3:/var/lib/postgresql/
+    networks:
+      - postgres_network
+    environment:
+      PGUSER: replicator
+      PGPASSWORD: replicator_password
+      POSTGRES_USER: rep3
+      POSTGRES_PASSWORD: rep3_pw
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U primary"]
+      start_period: 4s
+      start_interval: 1s
+      interval: 1s
+      retries: 5 
+      timeout: 5s
+
+
   pgpool:
     container_name: pgpool
     user: "0:0"
@@ -95,6 +124,10 @@ services:
         condition:
           service_healthy
         restart: true
+      postgres-replica3:
+        condition:
+          service_healthy
+        restart: true
     volumes:
       - ./init-scripts/pgpool:/config
       - /var/run/docker.sock:/var/run/docker.sock
@@ -112,6 +145,7 @@ volumes:
   postgres-volume-primary:
   postgres-volume-replica1:
   postgres-volume-replica2:
+  postgres-volume-replica3:
 
 networks:
   postgres_network:

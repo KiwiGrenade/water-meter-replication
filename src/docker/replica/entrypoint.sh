@@ -6,11 +6,6 @@ PRIMARY_PORT="${PRIMARY_PORT:-5432}"
 #
 echo "[replica] PGDATA=${PGDATA} primary=${PRIMARY_HOST}:${PRIMARY_PORT} user=${PGUSER}"
 
-# Start SSHD (best-effort)
-if command -v sshd >/dev/null 2>&1; then
-    /usr/sbin/sshd -E /proc/1/fd/1 -o LogLevel=DEBUG3 || echo "[replica] WARN: sshd failed to start"
-fi
-
 # Init only if empty
 if [[ ! -s "${PGDATA}/PG_VERSION" ]]; then
     echo "[replica] empty PGDATA -> pg_basebackup"

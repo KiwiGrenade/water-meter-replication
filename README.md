@@ -7,8 +7,11 @@ Aby poniższe instrukcje zadziałały muszą one zostać wykonane z wewnątrz fo
 
 1. Start
 ```
-docker compose up -d
+docker compose up
 ```
+-d  start w tle
+--build     ponowne zbudowanie obrazów
+
 2. Stop
 ```
 docker compose down
@@ -20,6 +23,10 @@ docker compose down -v
 4. Połączenie z postgresem
 ```
 psql -h localhost -U primary
+```
+5. Wejście do kontenera
+```
+docker exec -it <nazwa_kontenera> bash
 ```
 
 ## Terminarz:
