@@ -107,7 +107,6 @@ services:
   pgpool:
     container_name: pgpool
     user: "0:0"
-    # image: pgpool/pgpool
     build:
       context: .
       dockerfile: docker/pgpool-ssh/Dockerfile
@@ -135,10 +134,6 @@ services:
       - postgres_network
     ports:
       - 5432:9999 # map localhost 5432(postgres) to 9999 (pgpool) on pgpool container
-    environment:
-      BACKEND_CONTAINERS: "postgres-primary postgres-replica1 postgres-replica2"
-      REPL_USER: "replicator"
-      REPL_PASS: "replicator_password"
 
 
 volumes:
