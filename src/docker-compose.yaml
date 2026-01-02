@@ -31,9 +31,7 @@ services:
           service_healthy # wait for postgres-primary healtcheck
         restart: true
     volumes:
-      # - postgres-volume-replica1:/var/lib/postgresql/
-      - ./ssh/authorized_keys:/var/lib/postgresql/.ssh/authorized_keys
-      # - ./ssh/authorized_keys:/root/.ssh/authorized_keys
+      - postgres-volume-replica1:/var/lib/postgresql/
     networks:
       - postgres_network
     environment:
@@ -61,9 +59,7 @@ services:
           service_healthy
         restart: true
     volumes:
-      - ./ssh/authorized_keys:/var/lib/postgresql/.ssh/authorized_keys
-      # - postgres-volume-replica2:/var/lib/postgresql/
-      # - ./ssh/authorized_keys:/root/.ssh/authorized_keys
+      - postgres-volume-replica2:/var/lib/postgresql/
     networks:
       - postgres_network
     environment:
@@ -81,6 +77,7 @@ services:
 
   pgpool:
     container_name: pgpool
+    user: "0:0"
     # image: pgpool/pgpool
     build:
       context: .
@@ -99,12 +96,17 @@ services:
           service_healthy
         restart: true
     volumes:
-      - ./init-scripts/pgpool:/config:ro
-      - ./ssh/id_rsa_pgpool:/var/lib/pgsql/.ssh/id_rsa_pgpool
+      - ./init-scripts/pgpool:/config
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - postgres_network
     ports:
       - 5432:9999 # map localhost 5432(postgres) to 9999 (pgpool) on pgpool container
+    environment:
+      BACKEND_CONTAINERS: "postgres-primary postgres-replica1 postgres-replica2"
+      REPL_USER: "replicator"
+      REPL_PASS: "replicator_password"
+
 
 volumes:
   postgres-volume-primary:
