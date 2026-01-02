@@ -7,6 +7,7 @@
 --  - OPERATOR   – dodaje/edytuje odczyty
 --  - CLIENT     – klient końcowy, widzi swoje liczniki
 CREATE ROLE replicator WITH REPLICATION LOGIN PASSWORD 'replicator_password';
+CREATE ROLE failover LOGIN PASSWORD 'failover_pass' SUPERUSER;
 CREATE TYPE user_role AS ENUM ('ADMIN', 'OPERATOR', 'CLIENT');
 
 -- Opcjonalny status licznika (czy licznik jest aktywny)

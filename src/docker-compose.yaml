@@ -31,9 +31,9 @@ services:
           service_healthy # wait for postgres-primary healtcheck
         restart: true
     volumes:
-      - postgres-volume-replica1:/var/lib/postgresql/
-      - ./init-scripts/replica:/opt/replica-scripts/ # script for replication db initialization
-      - ./ssh/authorized_keys:/root/.ssh/authorized_keys
+      # - postgres-volume-replica1:/var/lib/postgresql/
+      - ./ssh/authorized_keys:/var/lib/postgresql/.ssh/authorized_keys
+      # - ./ssh/authorized_keys:/root/.ssh/authorized_keys
     networks:
       - postgres_network
     environment:
@@ -61,9 +61,9 @@ services:
           service_healthy
         restart: true
     volumes:
-      - postgres-volume-replica2:/var/lib/postgresql/
-      - ./init-scripts/replica:/opt/replica-scripts/
-      - ./ssh/authorized_keys:/root/.ssh/authorized_keys
+      - ./ssh/authorized_keys:/var/lib/postgresql/.ssh/authorized_keys
+      # - postgres-volume-replica2:/var/lib/postgresql/
+      # - ./ssh/authorized_keys:/root/.ssh/authorized_keys
     networks:
       - postgres_network
     environment:
@@ -81,6 +81,7 @@ services:
 
   pgpool:
     container_name: pgpool
+    # image: pgpool/pgpool
     build:
       context: .
       dockerfile: docker/pgpool-ssh/Dockerfile
@@ -99,7 +100,7 @@ services:
         restart: true
     volumes:
       - ./init-scripts/pgpool:/config:ro
-      - ./ssh/id_ed25519_pgpool:/root/.ssh/id_ed25519_pgpool
+      - ./ssh/id_rsa_pgpool:/var/lib/pgsql/.ssh/id_rsa_pgpool
     networks:
       - postgres_network
     ports:
