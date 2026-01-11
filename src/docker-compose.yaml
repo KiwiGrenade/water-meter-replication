@@ -1,25 +1,32 @@
+version: '3.8'
+
 services:
+  # --- BAZA DANYCH: PRIMARY ---
   postgres-primary:
     container_name: postgres-primary
-    image: postgres
-    volumes: # <volume_or_directory_on_host>:<path_in_container>
-      - postgres-volume-primary:/var/lib/postgresql/ # database persistency
-      - ./init-scripts/primary:/docker-entrypoint-initdb.d # autorunning initialization scripts
+    image: postgres:15
+    volumes:
+      - postgres-volume-primary-v3:/var/lib/postgresql/data
+      - ./init-scripts/primary:/docker-entrypoint-initdb.d
+    # Naprawa uprawnień i formatu plików przed startem
+    entrypoint: >
+      sh -c "chmod +x /docker-entrypoint-initdb.d/*.sh && 
+             sed -i 's/\r$$//' /docker-entrypoint-initdb.d/*.sh &&
+             exec docker-entrypoint.sh postgres"
     networks:
-      - postgres_network # container communication
+      - postgres_network
     environment:
-      POSTGRES_USER: primary # superuser name
-      POSTGRES_PASSWORD: pw # superuser password
-
-    healthcheck: # check if database is up
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
-      start_period: 4s
-      start_interval: 1s
-      interval: 1s
-      retries: 5 
+      POSTGRES_USER: primary
+      POSTGRES_PASSWORD: pw
+      POSTGRES_DB: primary
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U primary"]
+      start_period: 5s
+      interval: 2s
       timeout: 5s
+      retries: 5
 
-
+  # --- BAZA DANYCH: REPLIKI ---
   postgres-replica1:
     build:
       context: .
@@ -27,26 +34,22 @@ services:
     container_name: postgres-replica1
     depends_on:
       postgres-primary:
-        condition:
-          service_healthy # wait for postgres-primary healtcheck
-        restart: true
+        condition: service_healthy
     volumes:
-      - postgres-volume-replica1:/var/lib/postgresql/
+      - postgres-volume-replica1-v3:/var/lib/postgresql/data
     networks:
       - postgres_network
     environment:
-      PGUSER: replicator # connection user
-      PGPASSWORD: replicator_password # connection password
-      POSTGRES_USER: rep1 # superuser name
-      POSTGRES_PASSWORD: rep1_pw # superuser password
-    healthcheck: # check if database is up
+      PGUSER: replicator
+      PGPASSWORD: replicator_password
+      PRIMARY_HOST: postgres-primary
+      POSTGRES_USER: rep1
+      POSTGRES_PASSWORD: rep1_pw
+    healthcheck:
       test: ["CMD-SHELL", "pg_isready -U primary"]
-      start_period: 4s
-      start_interval: 1s
-      interval: 1s
-      retries: 5 
+      interval: 2s
       timeout: 5s
-
+      retries: 5
 
   postgres-replica2:
     container_name: postgres-replica2
@@ -55,26 +58,22 @@ services:
       dockerfile: docker/replica/Dockerfile
     depends_on:
       postgres-primary:
-        condition:
-          service_healthy
-        restart: true
+        condition: service_healthy
     volumes:
-      - postgres-volume-replica2:/var/lib/postgresql/
+      - postgres-volume-replica2-v3:/var/lib/postgresql/data
     networks:
       - postgres_network
     environment:
       PGUSER: replicator
       PGPASSWORD: replicator_password
+      PRIMARY_HOST: postgres-primary
       POSTGRES_USER: rep2
       POSTGRES_PASSWORD: rep2_pw
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U primary"]
-      start_period: 4s
-      start_interval: 1s
-      interval: 1s
-      retries: 5 
+      interval: 2s
       timeout: 5s
-
+      retries: 5
 
   postgres-replica3:
     container_name: postgres-replica3
@@ -83,27 +82,24 @@ services:
       dockerfile: docker/replica/Dockerfile
     depends_on:
       postgres-primary:
-        condition:
-          service_healthy
-        restart: true
+        condition: service_healthy
     volumes:
-      - postgres-volume-replica3:/var/lib/postgresql/
+      - postgres-volume-replica3-v3:/var/lib/postgresql/data
     networks:
       - postgres_network
     environment:
       PGUSER: replicator
       PGPASSWORD: replicator_password
+      PRIMARY_HOST: postgres-primary
       POSTGRES_USER: rep3
       POSTGRES_PASSWORD: rep3_pw
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U primary"]
-      start_period: 4s
-      start_interval: 1s
-      interval: 1s
-      retries: 5 
+      interval: 2s
       timeout: 5s
+      retries: 5
 
-
+  # --- PGPOOL-II (Load Balancer Bazy Danych & HA) ---
   pgpool:
     container_name: pgpool
     user: "0:0"
@@ -112,36 +108,60 @@ services:
       dockerfile: docker/pgpool-ssh/Dockerfile
     depends_on:
       postgres-primary:
-        condition:
-          service_healthy
-        restart: true
+        condition: service_healthy
       postgres-replica1:
-        condition:
-          service_healthy
-        restart: true
+        condition: service_healthy
       postgres-replica2:
-        condition:
-          service_healthy
-        restart: true
+        condition: service_healthy
       postgres-replica3:
-        condition:
-          service_healthy
-        restart: true
+        condition: service_healthy
     volumes:
       - ./init-scripts/pgpool:/config
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - postgres_network
     ports:
-      - 5432:9999 # map localhost 5432(postgres) to 9999 (pgpool) on pgpool container
+      - 5432:9999
 
+  # --- APLIKACJA (System Liczników) ---
+  water-app:
+    image: python:3.9-slim
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: sh -c "pip install flask psycopg2-binary && python app.py"
+    environment:
+      DB_HOST: pgpool
+      DB_PORT: 9999
+      DB_USER: primary
+      DB_PASS: pw
+      DB_NAME: primary
+    depends_on:
+      - pgpool
+    networks:
+      - postgres_network
+    deploy:
+      replicas: 3 
 
+  # --- NGINX (Load Balancer Serwerów Aplikacji) ---
+  nginx-lb:
+    image: nginx:latest
+    container_name: nginx-lb
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - water-app
+    networks:
+      - postgres_network
+
+# --- DEKLARACJA WOLUMENÓW (Muszą pasować do nazw powyżej) ---
 volumes:
-  postgres-volume-primary:
-  postgres-volume-replica1:
-  postgres-volume-replica2:
-  postgres-volume-replica3:
+  postgres-volume-primary-v3:
+  postgres-volume-replica1-v3:
+  postgres-volume-replica2-v3:
+  postgres-volume-replica3-v3:
 
 networks:
   postgres_network:
-
