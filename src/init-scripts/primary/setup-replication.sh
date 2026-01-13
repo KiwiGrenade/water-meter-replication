@@ -25,7 +25,7 @@ echo "max_replication_slots = 10" >> "$CONF_FILE"
 echo "hot_standby_feedback = on" >> "$CONF_FILE"
 echo "wal_keep_size = 1GB" >> "$CONF_FILE"
 
-# failover
+# failove
 echo "wal_log_hints = on" >> "$CONF_FILE"                    # also do full page writes of non-critical updates
 echo "synchronous_commit = remote_apply" >> "$CONF_FILE" # synchronization level; off, local, remote_write, remote_apply, or on
 echo "synchronous_standby_names = '*'" >> "$CONF_FILE" # standby servers that provide sync rep
