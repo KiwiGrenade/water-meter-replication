@@ -56,7 +56,7 @@ Docker, Kubernetes);
 - [x] **Zajęcia 10 - 9.12.2025:**
 Projekt i implementacja rozproszonej bazy danych
 
-- [ ] **Zajęcia 12 - 13.01.2026:**
+- [x] **Zajęcia 12 - 13.01.2026:**
 Projekt i implementacja prostej aplikacji wykorzystującej rozproszoną bazę
 danych; projekt oraz implementacja mechanizmów loadbalancingu (np. HAProxy, Nginx),
 zapewniających wysoką dostępność systemu oraz równoważenie obciążenia serwerów
