@@ -62,10 +62,10 @@ danych; projekt oraz implementacja mechanizmów loadbalancingu (np. HAProxy, Ngi
 zapewniających wysoką dostępność systemu oraz równoważenie obciążenia serwerów
 bazodanowych i/lub serwerów aplikacji
 
-- [ ] **Zajęcia 14 - 27.01.2026:**
+- [x] **Zajęcia 14 - 27.01.2026:**
 Testy i ocena działania systemu rozproszonego; prezentacja działania
 aplikacji, spisu treści i/lub wstępnej wersji sprawozdania z projektu
 
-- [ ] **Zajęcia 15 - 3.02.2026:**
+- [x] **Zajęcia 15 - 3.02.2026:**
 Testy i ocena działania systemu rozproszonego; prezentacja
 działania aplikacji, spisu treści i/lub wstępnej wersji sprawozdania z projektu;
